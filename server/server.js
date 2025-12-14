@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 import cookiePraser from 'cookie-parser';
 import  connectDB from './config/db.js';
+import authRouter from './Routes/authRoutes.js'
 
 //create express app 
 
@@ -29,7 +30,8 @@ app.use(cookiePraser());
 //to send cookies in response 
 app.use(cors({credentials:true}));
 
-
+//API endpoints
 app.get('/', (req,res)=>res.send("API Working okay"));
+app.use('/api/auth',authRouter);
 
 app.listen(port,()=>console.log(`Server started on Port :${port}`));
