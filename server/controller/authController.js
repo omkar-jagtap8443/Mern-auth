@@ -1,10 +1,13 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/usermodel.js';
+import sanitize from 'mongo-sanitize';
+import transporter from '../config/nodemailer.js';
+
 
 
 export const register = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password } = sanitize(req.body);
     if (!name || !email || !password) {
         return res.json({ success: false, message: 'missing Details' })
     }
@@ -31,7 +34,28 @@ export const register = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        return res.json({ success: true });
+
+        //sending welcome email
+        const mailOptions = {
+            from: process.env.SENDER_EMAIL,
+            to: email,
+            subject: "Welcome to our platform",
+            html: `
+        <h2>Hello ${name}</h2>
+        <p>Your account is created successfully with email id ${email}.</p>
+    `
+        }
+        console.log("REGISTER API HIT:", email);
+
+        transporter.sendMail(mailOptions)
+            .then(() => {
+                console.log("Welcome email sent user registered successfully");
+            })
+            .catch((err) => {
+                console.error("Email error:", err.message);
+            });
+
+        return res.json({ success: true, message: "User registered successfully" });
 
     }
     catch (error) {
@@ -41,9 +65,9 @@ export const register = async (req, res) => {
 }
 
 export const login = async (req, res) => {
-    const {  email, password } = req.body;
+    const { email, password } = sanitize(req.body);
 
-    if ( !email || !password) {
+    if (!email || !password) {
         return res.json({ success: false, message: 'Missing Details' });
     }
 
@@ -73,7 +97,7 @@ export const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        return res.json({ success: true ,message:'login successful' });
+        return res.json({ success: true, message: 'login successful' });
 
     } catch (error) {
         return res.json({ success: false, message: error.message });
@@ -82,7 +106,7 @@ export const login = async (req, res) => {
 
 
 
-export const logout = async (req,res) => {
+export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
             httpOnly: true,
