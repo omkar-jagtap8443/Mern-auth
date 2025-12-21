@@ -1,37 +1,29 @@
-import express from 'express';
-import cors from 'cors';
 import 'dotenv/config';
-import cookiePraser from 'cookie-parser';
-import  connectDB from './config/db.js';
-import authRouter from './Routes/authRoutes.js'
+import connectDB from './config/db.js';
+import app from './src/app.js';
 
 //create express app 
 
 
 
 
-const app =express();
-
 connectDB();
 
-//port number where app will run 
-
-const port = process.env.port || 4000
+// Port number where app will run
+const port = process.env.PORT || 4000;
 
 
 
 
 
 //request will be passed in json for that we use below code
-app.use(express.json());
+// App is configured in src/app.js
 
-app.use(cookiePraser());
+app.listen(port, '127.0.0.1', () => console.log(`Server started on Port: ${port}`));
 
-//to send cookies in response 
-app.use(cors({credentials:true}));
-
-//API endpoints
-app.get('/', (req,res)=>res.send("API Working okay"));
-app.use('/api/auth',authRouter);
-
-app.listen(port,()=>console.log(`Server started on Port :${port}`));
+process.on('unhandledRejection', (reason) => {
+	console.error('Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+	console.error('Uncaught Exception:', err);
+});
